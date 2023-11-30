@@ -18,20 +18,19 @@ def pretest_running(js):
         proc = subprocess.run(js['default_cmd'], shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                               timeout=math.ceil(1.2 * js['single_cutoff']))
         output = proc.stdout.decode()
-        jr['output'] = output
+        jr['msg'] = output
         pattern = r"<([^>]+)>"
         matches = re.findall(pattern, output)
         status = matches[0]
         score = float(matches[1])
         addition_rundata = matches[2]
         if status=='SUCCESS':
-            jr['res']='success'
+            jr['res']='true'
         else:
-            jr['res']='error'
-    except subprocess.TimeoutExpired:
-        jr['res'] = 'success'
-        jr['output'] ='Result of this algorithm run:<%s>,<%s>,<%s>' % (
-        'TIME_OUT', str(_abnormal_score), 'None')
+            jr['res']='false'
+    except Exception as e:
+        jr['res'] = 'false'
+        jr['msg'] =str(e)
         jr = json.dumps(jr, ensure_ascii=False)
         return jr
     jr = json.dumps(jr, ensure_ascii=False)
@@ -43,13 +42,13 @@ def get_instances_list(js):
     try:
         instances=os.listdir(js['instances_path'])
         btc.instance_length=len(instances)
-        jr['instances_path']=instances
+        jr['instance_list']=instances
     except Exception as e:
-        jr['res'] = 'error'
+        jr['res'] = 'false'
         jr['msg'] = str(e)
         jr = json.dumps(jr, ensure_ascii=False)
         return jr
-    jr['res']='success'
+    jr['res']='true'
     jr = json.dumps(jr,ensure_ascii=False)
     return jr
 
@@ -67,3 +66,17 @@ def get_max_cpu_cores():
         return jr
     jr = json.dumps(jr,ensure_ascii=False)
     return jr
+
+'''
+test1
+js1='{"task_id": "13","target": "MAX_TARGET","default_cmd": "cd /Users/kevinzc9/Programs/SeedTuner_Client&&python3 test.py","single_cutoff": 43}'
+result=pretest_running(js1)
+print()
+'''
+
+'''
+test2
+js1='{"instances_path":"/Users/kevinzc9/Programs/SeedTuner_Client"}'
+result=get_instances_list(js1)
+print()
+'''
