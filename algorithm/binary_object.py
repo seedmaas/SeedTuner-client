@@ -21,9 +21,9 @@ def doMutiSolve(task_id,solver,coreNum,detail_list)->list:
     executor = ThreadPoolExecutor(max_workers=coreNum)
     performanceList = []
     all_task=[]
-    for _ in btc.instance_length:
-        instance_solver = copy.deepcopy(solver)
-        all_task.append(executor.submit(instance_solver.solve,task_id,performanceList,detail_list))
+    # for _ in range(btc.instance_length):
+    instance_solver = copy.deepcopy(solver)
+    all_task.append(executor.submit(instance_solver.solve,task_id,performanceList,detail_list))
     result = [i.result() for i in all_task]
     executor.shutdown()
     return performanceList

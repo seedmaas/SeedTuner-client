@@ -10,8 +10,8 @@ task_log_handler = 2  # TERMINAL = 0 FILE = 1 TERMINAL_AND_FILE = 2
 task_log_level = 0  # DEBUG = 0 INFO = 1 WARNING = 2 COMPULSORY = 3
 
 
-instance_length=0
-current_path = os.getcwd()
+instance_length=5
+current_path = os.getcwd()+'/algorithm'
 task_root_path=os.path.join(current_path, "BOnlineTask")
 task_storage_path = os.path.join(task_root_path, "task_storage")
 task_info_path = os.path.join(task_storage_path, "task_info")
