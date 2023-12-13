@@ -2,7 +2,7 @@ import time
 import os
 import sys
 from enum import IntEnum
-import algorithm.Configs.bonline_task_config as btc
+import Configs.bonline_task_config as btc
 
 
 class Level(IntEnum):
