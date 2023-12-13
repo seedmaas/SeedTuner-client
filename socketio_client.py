@@ -35,6 +35,15 @@ def pretest_running():
     print('pretest_running end')
 
 
+@sio.on('run_task')
+def pretest_running():
+    print('run_task start')
+    js1 = '{"task_id": "13","target": "MAX_TARGET","default_cmd": "python test.py","single_cutoff": 43}'
+    result = client_pretest.pretest_running(js1)
+    sio.emit('get_running_res', result)
+    print('pretest_running end')
+
+
 if __name__ == '__main__':
     js1 = '{"task_id": "13","target": "MAX_TARGET","default_cmd": "python test.py","single_cutoff": 43}'
     result = client_pretest.pretest_running(js1)
