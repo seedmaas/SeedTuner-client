@@ -13,7 +13,7 @@ token = 'token1'
 def connect_to_server():
     print('Connecting to server...')
     # 连接到服务器，并在headers中发送token
-    sio.connect('http://39.106.153.79:5000', headers={'token': token})
+    sio.connect('http://39.106.153.79:8080', headers={'token': token})
 
 
 @sio.on('get_instance_list')
