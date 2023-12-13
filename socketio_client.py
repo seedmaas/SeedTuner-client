@@ -13,7 +13,7 @@ token = 'token1'
 def connect_to_server():
     print('Connecting to server...')
     # 连接到服务器，并在headers中发送token
-    sio.connect('http://localhost:5000', headers={'token': token})
+    sio.connect('http://39.106.153.79:5000', headers={'token': token})
 
 
 @sio.on('get_instance_list')
@@ -45,8 +45,6 @@ def pretest_running():
 
 
 if __name__ == '__main__':
-    js1 = '{"task_id": "13","target": "MAX_TARGET","default_cmd": "python test.py","single_cutoff": 43}'
-    result = client_pretest.pretest_running(js1)
     connect_to_server()
     sio.wait()  # 阻塞进程，直到客户端断开连接
 
