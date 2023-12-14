@@ -1,0 +1,5 @@
+{
+    "taskid": "f82ca00a76ca3f8c3b0200ee",
+    "default_cmd": "python3 wrapper.py -C 1 -shrinking True",
+    "type": "PRETEST"
+}
