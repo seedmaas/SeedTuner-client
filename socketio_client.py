@@ -18,9 +18,9 @@ def connect_to_server():
 
 
 @sio.on('get_instance_list')
-def get_instance_list():
+def get_instance_list(js1):
     print('get_instance_list start')
-    js1 = '{"instances_path":"C:/Project/SeedTuner-client"}'
+    # js1 = '{"instances_path":"C:/Project/SeedTuner-client"}'
     result = client_pretest.get_instances_list(js1)
     sio.emit('get_instance_res', result)
     print('get_instance_res end')

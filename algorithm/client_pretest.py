@@ -39,11 +39,11 @@ def pretest_running(js):
     return jr
 
 
-def get_instances_list(js):
-    js = json.loads(js)
+def get_instances_list(js1):
+    js1 = json.loads(js1)
     jr = {}
     try:
-        instances = os.listdir(js['instances_path'])
+        instances = os.listdir(js1['instances_path'])
         btc.instance_length = len(instances)
         jr['instance_list'] = instances
     except Exception as e:
@@ -84,9 +84,9 @@ print()
 '''
 
 if __name__ == '__main__':
-    js1 = '{"task_id": "13","target": "MAX_TARGET","default_cmd": "python ../test.py","single_cutoff": 43}'
-    result = pretest_running(js1)
-    print(result)
-    js1 = '{"instances_path":"C:/Project/SeedTuner-client"}'
+    # js1 = '{"": "13","target": "MAX_TARGET","default_cmd": "python ../test.py","single_cutoff": 43}'
+    # result = pretest_running(js1)
+    # print(result)
+    js1 = '{"instances_path":"/Users/kevinzc9"}'
     result = get_instances_list(js1)
     print(result)
