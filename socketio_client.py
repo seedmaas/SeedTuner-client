@@ -28,9 +28,9 @@ def get_instance_list(js1):
 
 
 @sio.on('pretest_running')
-def pretest_running():
+def pretest_running(js1):
     print('pretest_running start')
-    js1 = '{"task_id": "13","target": "MAX_TARGET","default_cmd": "python test.py","single_cutoff": 43}'
+    # js1 = '{"task_id": "13","target": "MAX_TARGET","default_cmd": "python test.py","single_cutoff": 43}'
     result = client_pretest.pretest_running(js1)
     sio.emit('pretest_running_res', result)
     print('pretest_running end')
