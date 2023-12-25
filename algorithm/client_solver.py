@@ -29,7 +29,10 @@ class ClientSolver:
                 pattern = r"<([^>]+)>"
                 matches = re.findall(pattern, output)
                 status=matches[0]
-                score = float(matches[1])
+                if(matches[1]=='None'):
+                    score=None
+                else:
+                    score = float(matches[1])
                 addition_rundata=matches[2]
             except subprocess.TimeoutExpired:
                 logging.logger.log(logging.Level.COMPULSORY, task_id, "", heads=["Algorithm", "TIME_OUT", "cmd: %s" % execute_cmd])
@@ -41,7 +44,7 @@ class ClientSolver:
                 logging.logger.log(logging.Level.COMPULSORY, task_id,
                                    "Auto-Tuner didn't find the algorithm score, please check the output!" ,
                                    heads=["Algorithm", "ERROR", "TIME_OUT", "cmd: %s" % execute_cmd])
-                raise Exception("score not found! %s" % score)
+                raise Exception("score not found! %s" % execute_cmd)
             else:
                 logging.logger.log(logging.Level.COMPULSORY, task_id, "",
                                    heads=["Algorithm", "SUCCESS", "cmd: %s" % execute_cmd, "score:%s" % str(score)])

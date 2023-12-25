@@ -1,14 +1,30 @@
+import atexit
+import os
+import signal
+import sys
+import threading
 import socketio
-
+import json
 from algorithm import client_pretest
 from algorithm import client_process
+import queue
+from multiprocessing import Process
 
 # 创建一个socketio客户端实例
 sio = socketio.Client()
+result_queue = queue.Queue()  # 用于存储 pretest_running 的结果
 
 # 这是一个示例token，实际使用时需要替换为有效的token
 token = 'token1'
 
+pretest_running_thread = None  # 用于存储 pretest_running 线程对象
+
+def stop_pretest_running():
+    global pretest_running_thread
+    if pretest_running_thread is not None and pretest_running_thread.is_alive():
+        print('doing terminate!')
+        pretest_running_thread.terminate()
+        pretest_running_thread = None
 
 # 连接到服务器的函数
 def connect_to_server():
@@ -30,10 +46,21 @@ def get_instance_list(js1):
 @sio.on('pretest_running')
 def pretest_running(js1):
     print('pretest_running start')
-    # js1 = '{"task_id": "13","target": "MAX_TARGET","default_cmd": "python test.py","single_cutoff": 43}'
+    js1 = '{"task_id": "111","target": "MAX_TARGET","default_cmd": "cd /home/zhouchen&&python test.py","single_cutoff": 9999}'
     result = client_pretest.pretest_running(js1)
-    sio.emit('pretest_running_res', result)
+    # global pretest_running_thread
+    # 创建并启动新的 pretest_running 线程
+    # pretest_running_thread = Process(target=client_pretest.pretest_running, args=(js1,result_queue))
+    # pretest_running_thread.start()
+    # sio.emit('pretest_running_res',    result_queue.get())
+    sio.emit('pretest_running_res',result)
+
     print('pretest_running end')
+
+@sio.on('terminate_task')
+def terminate_task():
+    client_pretest.terminate_task()
+
 
 
 @sio.on('run_task')
