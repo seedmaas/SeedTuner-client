@@ -1,10 +1,12 @@
 import argparse
+import logging
 import queue
 
 import socketio
 
 from algorithm import client_pretest
 from algorithm import client_process
+from algorithm.client_config import log_config
 
 # 创建 ArgumentParser 对象
 parser = argparse.ArgumentParser(description='A simple argument parser')
@@ -15,35 +17,44 @@ parser.add_argument('--server', type=str, help='连接服务器')
 args = parser.parse_args()
 from algorithm import client_main
 
-
 # 创建一个socketio客户端实例
 sio = socketio.Client()
 result_queue = queue.Queue()  # 用于存储 pretest_running 的结果
+log_config.init_logger()
+
 
 # 连接到服务器的函数
 def connect_to_server():
-    print('Connecting to server...')
+    logging.info('Connecting to server...')
     # 连接到服务器，并在headers中发送token
     sio.connect(args.server, headers={'token': args.token})
+    logging.info('Connected to server successfully with token: {}'.format(args.token))
 
 
 @sio.on('get_instance_list')
-def get_instance_list(js1):
-    print('get_instance_list start')
+def get_instance_list(emit_param_wrapper):
+    logging.info('get_instance_list start with emit_param_wrapper:{}'.format(emit_param_wrapper))
     # js1 = '{"instances_path":"C:/Project/SeedTuner-client"}'
-    result = client_pretest.get_instances_list(js1)
-    sio.emit('get_instance_res', result)
-    print('get_instance_res end')
+    result = client_pretest.get_instances_list(emit_param_wrapper["param"])
+    sio.emit('report_res', {
+        'emit_id': emit_param_wrapper['emit_id'],
+        'res': result
+    })
+    logging.info('get_instance_res end')
 
 
 @sio.on('pretest_running')
-def pretest_running(js1):
-    print('pretest_running start')
-    client_main.init_task(js1)
+def pretest_running(emit_param_wrapper):
+    logging.info('pretest_running start with emit_param_wrapper:{}'.format(emit_param_wrapper))
+    emit_param = emit_param_wrapper["param"]
+    client_main.init_task(emit_param)
     # js1 = '{"task_id": "111","target": "MAX_TARGET","default_cmd": "cd /home/zhouchen&&python a.py","single_cutoff": 9999}'
-    result = client_pretest.pretest_running(js1)
-    sio.emit('pretest_running_res', result)
-    print('pretest_running end')
+    result = client_pretest.pretest_running(emit_param)
+    sio.emit('report_res', {
+        'emit_id': emit_param_wrapper['emit_id'],
+        'res': result
+    })
+    logging.info('pretest_running end')
 
 
 @sio.on('terminate_task')
@@ -52,13 +63,17 @@ def terminate_task():
 
 
 @sio.on('run_task')
-def pretest_running(js1):
-    print('run_task start')
+def pretest_running(emit_param_wrapper):
+    logging.info('run_task start with emit_param_wrapper:{}'.format(emit_param_wrapper))
+    emit_param = emit_param_wrapper["param"]
     # js1='[{"task_id": "111", "target": "MAX_TARGET", "single_cutoff": 100, "max_cores": 3, "origin_cmd_id": "0", "params": {"fixed_params": [], "tuned_params": [{"name": "seed", "value": "1"}]}, "origin_cmd": "python wrapper.py -seed 1 ", "execute_cmds": [{"execute_cmd_id": "0", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 1 -instance ~/test_client/instances/true.cnf -cutoff_time 40 "}, {"execute_cmd_id": "1", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 1 -instance ~/test_client/instances/bin1.cnf -cutoff_time 40 "}, {"execute_cmd_id": "2", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 1 -instance ~/test_client/instances/bin2.cnf -cutoff_time 40 "}, {"execute_cmd_id": "3", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 1 -instance ~/test_client/instances/bin3.cnf -cutoff_time 40 "}, {"execute_cmd_id": "4", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 1 -instance ~/test_client/instances/eq1.cnf -cutoff_time 40 "}]}, {"task_id": "111", "target": "MAX_TARGET", "single_cutoff": 100, "max_cores": 3, "origin_cmd_id": "1", "params": {"fixed_params": [], "tuned_params": [{"name": "seed", "value": 417}]}, "origin_cmd": "python wrapper.py -seed 417 ", "execute_cmds": [{"execute_cmd_id": "0", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 417 -instance ~/test_client/instances/true.cnf -cutoff_time 40 "}, {"execute_cmd_id": "1", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 417 -instance ~/test_client/instances/bin1.cnf -cutoff_time 40 "}, {"execute_cmd_id": "2", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 417 -instance ~/test_client/instances/bin2.cnf -cutoff_time 40 "}, {"execute_cmd_id": "3", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 417 -instance ~/test_client/instances/bin3.cnf -cutoff_time 40 "}, {"execute_cmd_id": "4", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 417 -instance ~/test_client/instances/eq1.cnf -cutoff_time 40 "}]}, {"task_id": "111", "target": "MAX_TARGET", "single_cutoff": 100, "max_cores": 3, "origin_cmd_id": "2", "params": {"fixed_params": [], "tuned_params": [{"name": "seed", "value": 988}]}, "origin_cmd": "python wrapper.py -seed 988 ", "execute_cmds": [{"execute_cmd_id": "0", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 988 -instance ~/test_client/instances/true.cnf -cutoff_time 40 "}, {"execute_cmd_id": "1", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 988 -instance ~/test_client/instances/bin1.cnf -cutoff_time 40 "}, {"execute_cmd_id": "2", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 988 -instance ~/test_client/instances/bin2.cnf -cutoff_time 40 "}, {"execute_cmd_id": "3", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 988 -instance ~/test_client/instances/bin3.cnf -cutoff_time 40 "}, {"execute_cmd_id": "4", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 988 -instance ~/test_client/instances/eq1.cnf -cutoff_time 40 "}]}, {"task_id": "111", "target": "MAX_TARGET", "single_cutoff": 100, "max_cores": 3, "origin_cmd_id": "3", "params": {"fixed_params": [], "tuned_params": [{"name": "seed", "value": 0}]}, "origin_cmd": "python wrapper.py -seed 0 ", "execute_cmds": [{"execute_cmd_id": "0", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 0 -instance ~/test_client/instances/true.cnf -cutoff_time 40 "}, {"execute_cmd_id": "1", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 0 -instance ~/test_client/instances/bin1.cnf -cutoff_time 40 "}, {"execute_cmd_id": "2", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 0 -instance ~/test_client/instances/bin2.cnf -cutoff_time 40 "}, {"execute_cmd_id": "3", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 0 -instance ~/test_client/instances/bin3.cnf -cutoff_time 40 "}, {"execute_cmd_id": "4", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 0 -instance ~/test_client/instances/eq1.cnf -cutoff_time 40 "}]}, {"task_id": "111", "target": "MAX_TARGET", "single_cutoff": 100, "max_cores": 3, "origin_cmd_id": "4", "params": {"fixed_params": [], "tuned_params": [{"name": "seed", "value": 699}]}, "origin_cmd": "python wrapper.py -seed 699 ", "execute_cmds": [{"execute_cmd_id": "0", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 699 -instance ~/test_client/instances/true.cnf -cutoff_time 40 "}, {"execute_cmd_id": "1", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 699 -instance ~/test_client/instances/bin1.cnf -cutoff_time 40 "}, {"execute_cmd_id": "2", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 699 -instance ~/test_client/instances/bin2.cnf -cutoff_time 40 "}, {"execute_cmd_id": "3", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 699 -instance ~/test_client/instances/bin3.cnf -cutoff_time 40 "}, {"execute_cmd_id": "4", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 699 -instance ~/test_client/instances/eq1.cnf -cutoff_time 40 "}]}, {"task_id": "111", "target": "MAX_TARGET", "single_cutoff": 100, "max_cores": 3, "origin_cmd_id": "5", "params": {"fixed_params": [], "tuned_params": [{"name": "seed", "value": 211}]}, "origin_cmd": "python wrapper.py -seed 211 ", "execute_cmds": [{"execute_cmd_id": "0", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 211 -instance ~/test_client/instances/true.cnf -cutoff_time 40 "}, {"execute_cmd_id": "1", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 211 -instance ~/test_client/instances/bin1.cnf -cutoff_time 40 "}, {"execute_cmd_id": "2", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 211 -instance ~/test_client/instances/bin2.cnf -cutoff_time 40 "}, {"execute_cmd_id": "3", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 211 -instance ~/test_client/instances/bin3.cnf -cutoff_time 40 "}, {"execute_cmd_id": "4", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 211 -instance ~/test_client/instances/eq1.cnf -cutoff_time 40 "}]}, {"task_id": "111", "target": "MAX_TARGET", "single_cutoff": 100, "max_cores": 3, "origin_cmd_id": "6", "params": {"fixed_params": [], "tuned_params": [{"name": "seed", "value": 558}]}, "origin_cmd": "python wrapper.py -seed 558 ", "execute_cmds": [{"execute_cmd_id": "0", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 558 -instance ~/test_client/instances/true.cnf -cutoff_time 40 "}, {"execute_cmd_id": "1", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 558 -instance ~/test_client/instances/bin1.cnf -cutoff_time 40 "}, {"execute_cmd_id": "2", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 558 -instance ~/test_client/instances/bin2.cnf -cutoff_time 40 "}, {"execute_cmd_id": "3", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 558 -instance ~/test_client/instances/bin3.cnf -cutoff_time 40 "}, {"execute_cmd_id": "4", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 558 -instance ~/test_client/instances/eq1.cnf -cutoff_time 40 "}]}, {"task_id": "111", "target": "MAX_TARGET", "single_cutoff": 100, "max_cores": 3, "origin_cmd_id": "7", "params": {"fixed_params": [], "tuned_params": [{"name": "seed", "value": 834}]}, "origin_cmd": "python wrapper.py -seed 834 ", "execute_cmds": [{"execute_cmd_id": "0", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 834 -instance ~/test_client/instances/true.cnf -cutoff_time 40 "}, {"execute_cmd_id": "1", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 834 -instance ~/test_client/instances/bin1.cnf -cutoff_time 40 "}, {"execute_cmd_id": "2", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 834 -instance ~/test_client/instances/bin2.cnf -cutoff_time 40 "}, {"execute_cmd_id": "3", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 834 -instance ~/test_client/instances/bin3.cnf -cutoff_time 40 "}, {"execute_cmd_id": "4", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 834 -instance ~/test_client/instances/eq1.cnf -cutoff_time 40 "}]}, {"task_id": "111", "target": "MAX_TARGET", "single_cutoff": 100, "max_cores": 3, "origin_cmd_id": "8", "params": {"fixed_params": [], "tuned_params": [{"name": "seed", "value": 103}]}, "origin_cmd": "python wrapper.py -seed 103 ", "execute_cmds": [{"execute_cmd_id": "0", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 103 -instance ~/test_client/instances/true.cnf -cutoff_time 40 "}, {"execute_cmd_id": "1", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 103 -instance ~/test_client/instances/bin1.cnf -cutoff_time 40 "}, {"execute_cmd_id": "2", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 103 -instance ~/test_client/instances/bin2.cnf -cutoff_time 40 "}, {"execute_cmd_id": "3", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 103 -instance ~/test_client/instances/bin3.cnf -cutoff_time 40 "}, {"execute_cmd_id": "4", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 103 -instance ~/test_client/instances/eq1.cnf -cutoff_time 40 "}]}, {"task_id": "111", "target": "MAX_TARGET", "single_cutoff": 100, "max_cores": 3, "origin_cmd_id": "9", "params": {"fixed_params": [], "tuned_params": [{"name": "seed", "value": 313}]}, "origin_cmd": "python wrapper.py -seed 313 ", "execute_cmds": [{"execute_cmd_id": "0", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 313 -instance ~/test_client/instances/true.cnf -cutoff_time 40 "}, {"execute_cmd_id": "1", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 313 -instance ~/test_client/instances/bin1.cnf -cutoff_time 40 "}, {"execute_cmd_id": "2", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 313 -instance ~/test_client/instances/bin2.cnf -cutoff_time 40 "}, {"execute_cmd_id": "3", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 313 -instance ~/test_client/instances/bin3.cnf -cutoff_time 40 "}, {"execute_cmd_id": "4", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 313 -instance ~/test_client/instances/eq1.cnf -cutoff_time 40 "}]}, {"task_id": "111", "target": "MAX_TARGET", "single_cutoff": 100, "max_cores": 3, "origin_cmd_id": "10", "params": {"fixed_params": [], "tuned_params": [{"name": "seed", "value": 908}]}, "origin_cmd": "python wrapper.py -seed 908 ", "execute_cmds": [{"execute_cmd_id": "0", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 908 -instance ~/test_client/instances/true.cnf -cutoff_time 40 "}, {"execute_cmd_id": "1", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 908 -instance ~/test_client/instances/bin1.cnf -cutoff_time 40 "}, {"execute_cmd_id": "2", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 908 -instance ~/test_client/instances/bin2.cnf -cutoff_time 40 "}, {"execute_cmd_id": "3", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 908 -instance ~/test_client/instances/bin3.cnf -cutoff_time 40 "}, {"execute_cmd_id": "4", "execute_cmd": "cd ~/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 908 -instance ~/test_client/instances/eq1.cnf -cutoff_time 40 "}]}]'
-    js1='[{"task_id": "111", "target": "MAX_TARGET", "single_cutoff": 100, "max_cores": 3, "origin_cmd_id": "0", "params": {"fixed_params": [], "tuned_params": [{"name": "seed", "value": "1"}]}, "origin_cmd": "python wrapper.py -seed 1 ", "execute_cmds": [{"execute_cmd_id": "0", "execute_cmd": "cd /home/zhouchen && python a.py"}, {"execute_cmd_id": "1", "execute_cmd": "cd /home/zhouchen && python a.py"}]}]' 
-    result = client_process.get_solvers_output(js1)
-    # sio.emit('get_running_res', result)
-    print('run task end')
+    # js1 = '[{"task_id": "111", "target": "MAX_TARGET", "single_cutoff": 100, "max_cores": 3, "origin_cmd_id": "0", "params": {"fixed_params": [], "tuned_params": [{"name": "seed", "value": "1"}]}, "origin_cmd": "python wrapper.py -seed 1 ", "execute_cmds": [{"execute_cmd_id": "0", "execute_cmd": "cd /home/zhouchen && python a.py"}, {"execute_cmd_id": "1", "execute_cmd": "cd /home/zhouchen && python a.py"}]}]'
+    result = client_process.get_solvers_output(emit_param)
+    sio.emit('report_res', {
+        'emit_id': emit_param_wrapper['emit_id'],
+        'res': result
+    })
+    logging.info('run task end')
 
 
 if __name__ == '__main__':
