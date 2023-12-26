@@ -11,20 +11,25 @@ import os
 import signal
 import sys
 import psutil
+import algorithm.Logger.task_logging as logging
 
-process=None 
 def kill(proc_pid):
-    process = psutil.Process(proc_pid)
-    for proc in process.children(recursive=True):
-        proc.kill()
-        process.kill()
+    proc_pid=int(proc_pid)
+    if psutil.pid_exists(proc_pid):
+        process = psutil.Process(proc_pid)
+        for proc in process.children(recursive=True):
+            proc.kill()
+            process.kill()
         
 def terminate_task():
-    global process
-    kill(proc_pid=process.pid)
+    pid_file = btc.pids_path
+    with open(pid_file, 'r') as file:
+        for line in file:
+            pid = line.strip() 
+            kill(pid)
+    
 
 def pretest_running(js1):
-    global process
     js1 = json.loads(js1)
     jr = {}
     if js1['target'] == 'MAX_TARGET':
@@ -34,6 +39,9 @@ def pretest_running(js1):
     try:
         score = None
         process = subprocess.Popen(js1['default_cmd'], shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        with open('/home/zhouchen/pids.txt', 'a') as file:
+            file.write(str(process.pid) + '\n')
+            file.close()
         # proc = subprocess.run(js1['default_cmd'], shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
         #                       timeout=math.ceil(1.2 * js1['single_cutoff']))
         # output = proc.stdout.decode()
@@ -50,11 +58,17 @@ def pretest_running(js1):
         else:
             jr['res'] = 'false'
     except Exception as e:
+        logging.logger.log(logging.Level.INFO, js1['task_id'],
+                                   "run default cmd error!" ,
+                                   heads=["Algorithm", "ERROR", "TIME_OUT", "cmd: %s" % js1['default_cmd']]) 
         jr['res'] = 'false'
         jr['msg'] = 'default cmd run error:'+str(e)
         jr = json.dumps(jr, ensure_ascii=False)
         return jr
     jr = json.dumps(jr, ensure_ascii=False)
+    logging.logger.log(logging.Level.INFO, js1['task_id'],
+                                   "run default cmd success!" ,
+                                   heads=["Algorithm", "ERROR", "TIME_OUT", "cmd: %s" % js1['default_cmd']]) 
     return jr
 
 

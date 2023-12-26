@@ -4,8 +4,24 @@ import re
 import math
 import threading
 import algorithm.Logger.task_logging as logging
+import psutil
+from algorithm.Configs import bonline_task_config as btc
 
 
+def kill(proc_pid):
+    proc_pid=int(proc_pid)
+    if psutil.pid_exists(proc_pid):
+        process = psutil.Process(proc_pid)
+        for proc in process.children(recursive=True):
+            proc.kill()
+            process.kill()
+        
+def terminate_task():
+    pid_file = btc.pids_path
+    with open(pid_file, 'r') as file:
+        for line in file:
+            pid = line.strip() 
+            kill(pid)
 
 lock = threading.Lock()
 class ClientSolver:
@@ -23,9 +39,15 @@ class ClientSolver:
         for execute_cmd in self.final_execute_cmds:
             try:
                 score=None
-                proc = subprocess.run(execute_cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                                        timeout=math.ceil(1.2 * self.timeout))
-                output=proc.stdout.decode()
+                # proc = subprocess.run(execute_cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                #                         timeout=math.ceil(1.2 * self.timeout))
+                proc = subprocess.Popen(execute_cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+                with open('/home/zhouchen/pids.txt', 'a') as file:
+                    file.write(str(proc.pid) + '\n')
+                    file.close()
+                # output=proc.stdout.decode()
+                proc.wait(timeout=math.ceil(1.2 *self.timeout))
+                output = proc.stdout.read().decode()
                 pattern = r"<([^>]+)>"
                 matches = re.findall(pattern, output)
                 status=matches[0]
@@ -39,11 +61,16 @@ class ClientSolver:
                 performanceList.append(self._abnormal_score())
                 detail_list[execute_cmd]='Result of this algorithm run:<%s>,<%s>,<%s>'% ('TIME_OUT',str(self._abnormal_score()),'None')
                 lock.release()
-
+            except Exception as e:
+                logging.logger.log(logging.Level.INFO,task_id,
+                                   "run solver cmd error!" ,
+                                   heads=["Algorithm", "ERROR", "TIME_OUT", "cmd: %s" % execute_cmd]) 
+                lock.release()
             if score is None:
                 logging.logger.log(logging.Level.COMPULSORY, task_id,
                                    "Auto-Tuner didn't find the algorithm score, please check the output!" ,
                                    heads=["Algorithm", "ERROR", "TIME_OUT", "cmd: %s" % execute_cmd])
+                lock.release()
                 raise Exception("score not found! %s" % execute_cmd)
             else:
                 logging.logger.log(logging.Level.COMPULSORY, task_id, "",

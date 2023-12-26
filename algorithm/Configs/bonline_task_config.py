@@ -9,7 +9,7 @@ MAX_EXECUTE_TIME = 172800
 task_log_handler = 2  # TERMINAL = 0 FILE = 1 TERMINAL_AND_FILE = 2
 task_log_level = 0  # DEBUG = 0 INFO = 1 WARNING = 2 COMPULSORY = 3
 
-
+pids_path='/home/zhouchen/pids.txt'
 instance_length=5
 current_path = os.getcwd()+'/algorithm'
 task_root_path=os.path.join(current_path, "BOnlineTask")
@@ -25,3 +25,5 @@ def get_info(task_id,name):
          return os.listdir(data['muti_instances'])
      else:
          return data[name]
+     
+     
