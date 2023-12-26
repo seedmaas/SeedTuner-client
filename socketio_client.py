@@ -1,14 +1,18 @@
-import atexit
-import os
-import signal
-import sys
-import threading
+import argparse
+import queue
+
 import socketio
-import json
+
 from algorithm import client_pretest
 from algorithm import client_process
-import queue
-from multiprocessing import Process
+
+# 创建 ArgumentParser 对象
+parser = argparse.ArgumentParser(description='A simple argument parser')
+# 添加 name 参数，指定使用 -- 开头表示这是一个可选参数
+parser.add_argument('--token', type=str, help='连接token')
+parser.add_argument('--server', type=str, help='连接服务器')
+# 解析命令行参数
+args = parser.parse_args()
 from algorithm import client_main
 
 
@@ -16,14 +20,11 @@ from algorithm import client_main
 sio = socketio.Client()
 result_queue = queue.Queue()  # 用于存储 pretest_running 的结果
 
-# 这是一个示例token，实际使用时需要替换为有效的token
-token = 'token1'
-
 # 连接到服务器的函数
 def connect_to_server():
     print('Connecting to server...')
     # 连接到服务器，并在headers中发送token
-    sio.connect('http://39.106.153.79:8080', headers={'token': token})
+    sio.connect(args.server, headers={'token': args.token})
 
 
 @sio.on('get_instance_list')
@@ -35,20 +36,19 @@ def get_instance_list(js1):
     print('get_instance_res end')
 
 
-
 @sio.on('pretest_running')
 def pretest_running(js1):
     print('pretest_running start')
     client_main.init_task(js1)
     # js1 = '{"task_id": "111","target": "MAX_TARGET","default_cmd": "cd /home/zhouchen&&python a.py","single_cutoff": 9999}'
     result = client_pretest.pretest_running(js1)
-    sio.emit('pretest_running_res',result)
+    sio.emit('pretest_running_res', result)
     print('pretest_running end')
+
 
 @sio.on('terminate_task')
 def terminate_task():
     client_pretest.terminate_task()
-
 
 
 @sio.on('run_task')
@@ -64,6 +64,3 @@ def pretest_running(js1):
 if __name__ == '__main__':
     connect_to_server()
     sio.wait()  # 阻塞进程，直到客户端断开连接
-
-# Note: To keep the connection alive, you should ensure that your Python script doesn't just exit.
-# You may have to do something to keep it running, such as entering an infinite loop or waiting for user input.
