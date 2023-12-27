@@ -1,4 +1,4 @@
-[2023-12-26-10:10:20][COMPULSORY][CONFIG][SUCCESS] Init config for task_111 success!
-[2023-12-26-10:10:20][INFO][Algorithm][ERROR][TIME_OUT][cmd: cd /home/zhouchen/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 1 -instance /home/zhouchen/test_client/instances/bin3.cnf -cutoff_time 40] run default cmd success!
-[2023-12-26-10:10:36][INFO][Algorithm][ERROR][TIME_OUT][cmd: cd /home/zhouchen && python a.py] run solver cmd error!
-[2023-12-26-10:10:36][COMPULSORY][Algorithm][ERROR][TIME_OUT][cmd: cd /home/zhouchen && python a.py] Auto-Tuner didn't find the algorithm score, please check the output!
+[2023-12-27-03:20:11][COMPULSORY][CONFIG][SUCCESS] Init config for task_111 success!
+[2023-12-27-03:20:11][INFO][Algorithm][ERROR][TIME_OUT][cmd: cd /home/zhouchen/test_client/PbO-CCSAT-master/PbO-CCSAT_object_oriented_version_source_code &&python wrapper.py -seed 1 -instance /home/zhouchen/test_client/instances/bin3.cnf -cutoff_time 40] run default cmd success!
+[2023-12-27-03:20:25][INFO][Algorithm][ERROR][TIME_OUT][cmd: cd /home/zhouchen && python a.py] run solver cmd error!
+[2023-12-27-03:20:25][COMPULSORY][Algorithm][ERROR][TIME_OUT][cmd: cd /home/zhouchen && python a.py] Auto-Tuner didn't find the algorithm score, please check the output!
