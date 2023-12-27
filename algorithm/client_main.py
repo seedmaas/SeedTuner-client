@@ -12,8 +12,9 @@ def init_task(js1):
         logging.logger.log(logging.Level.COMPULSORY, task_id,
                            "Init config for task_%s success!"% task_id,
                            heads=["CONFIG", "SUCCESS"])
-    # os.chdir(btc.task_space_path)
-    # if 'task_%s' % task_id not in os.listdir():
-    #     os.mkdir('task_%s' % task_id)
+    
+    os.chdir(btc.task_space_path)
+    if 'task_%s' % task_id not in os.listdir():
+        os.mkdir('task_%s' % task_id)
 
 

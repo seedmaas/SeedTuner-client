@@ -22,10 +22,11 @@ class ClientProcess:
             origin_cmd_id=solver_data['origin_cmd_id']
             binary_cmd=solver_data['origin_cmd']
             execute_cmds_data=solver_data['execute_cmds']
+            task_id=solver_data['task_id']
             final_execute_cmds=[]
             for execute_cmd_data in execute_cmds_data:
                 final_execute_cmds.append(execute_cmd_data['execute_cmd'])
-            cs=ClientSolver(binary_cmd=binary_cmd,final_execute_cmds=final_execute_cmds,target=self.target,timeout=self.timeout)
+            cs=ClientSolver(binary_cmd=binary_cmd,final_execute_cmds=final_execute_cmds,task_id=task_id,target=self.target,timeout=self.timeout)
             self.solvers.append(cs)
 
     def get_outputs(self):

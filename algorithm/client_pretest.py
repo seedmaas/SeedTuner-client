@@ -21,8 +21,8 @@ def kill(proc_pid):
             proc.kill()
             process.kill()
         
-def terminate_task():
-    pid_file = btc.pids_path
+def terminate_task(task_id):
+    pid_file = btc.get_task_pids_path(task_id)
     with open(pid_file, 'r') as file:
         for line in file:
             pid = line.strip() 
@@ -31,6 +31,7 @@ def terminate_task():
 
 def pretest_running(js1):
     js1 = json.loads(js1)
+    task_id=js1['task_id']
     jr = {}
     if js1['target'] == 'MAX_TARGET':
         _abnormal_score = -1 * 1e9
@@ -39,7 +40,7 @@ def pretest_running(js1):
     try:
         score = None
         process = subprocess.Popen(js1['default_cmd'], shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-        with open('/home/zhouchen/pids.txt', 'a') as file:
+        with open(btc.get_task_pids_path(task_id), 'a') as file:
             file.write(str(process.pid) + '\n')
             file.close()
         # proc = subprocess.run(js1['default_cmd'], shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE,

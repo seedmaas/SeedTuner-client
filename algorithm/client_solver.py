@@ -16,8 +16,8 @@ def kill(proc_pid):
             proc.kill()
             process.kill()
         
-def terminate_task():
-    pid_file = btc.pids_path
+def terminate_task(task_id):
+    pid_file = btc.get_task_pids_path(task_id)
     with open(pid_file, 'r') as file:
         for line in file:
             pid = line.strip() 
@@ -25,13 +25,14 @@ def terminate_task():
 
 lock = threading.Lock()
 class ClientSolver:
-    def __init__(self,binary_cmd,final_execute_cmds,
+    def __init__(self,binary_cmd,final_execute_cmds,task_id,
                  target='MAX_TARGET',timeout=None):
         self.timeout = timeout
         self.binary_cmd = binary_cmd
         self.target=target
         self.cmd=None
         self.final_execute_cmds=final_execute_cmds
+        self.task_id=task_id
 
     def solve(self, task_id,performanceList,detail_list):
         lock.acquire()
@@ -42,7 +43,7 @@ class ClientSolver:
                 # proc = subprocess.run(execute_cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                 #                         timeout=math.ceil(1.2 * self.timeout))
                 proc = subprocess.Popen(execute_cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-                with open('/home/zhouchen/pids.txt', 'a') as file:
+                with open(btc.get_task_pids_path(task_id), 'a') as file:
                     file.write(str(proc.pid) + '\n')
                     file.close()
                 # output=proc.stdout.decode()
