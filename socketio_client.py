@@ -1,7 +1,9 @@
 import argparse
-import logging
-import queue
 import json
+import logging
+import multiprocessing
+import queue
+
 import socketio
 
 from algorithm import client_pretest
@@ -21,6 +23,16 @@ from algorithm import client_main
 sio = socketio.Client()
 result_queue = queue.Queue()  # 用于存储 pretest_running 的结果
 log_config.init_logger()
+
+
+@sio.on('get_cpu_cores')
+def get_cpu_cores(emit_param_wrapper):
+    logging.info('get_cpu_cores start with emit_param_wrapper:{}'.format(emit_param_wrapper))
+    sio.emit('report_res', {
+        'emit_id': emit_param_wrapper['emit_id'],
+        'res': multiprocessing.cpu_count()
+    })
+    logging.info('get_cpu_cores end')
 
 
 # 连接到服务器的函数
@@ -60,8 +72,9 @@ def pretest_running(emit_param_wrapper):
 @sio.on('terminate_task')
 def terminate_task(param):
     print(param)
-    param=json.loads(param['param'])
+    param = json.loads(param['param'])
     client_pretest.terminate_task(param['task_id'])
+
 
 @sio.on('run_task')
 def pretest_running(emit_param_wrapper):
