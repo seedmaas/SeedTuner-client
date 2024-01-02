@@ -7,7 +7,7 @@ from algorithm.client_solver import ClientSolver
 from algorithm.Configs import bonline_task_config as btc
 
 class ClientProcess:
-    def __init__(self,task_id,target,coreNum,timeout):
+    def __init__(self,task_id,target,coreNum,timeout,init_config):
         self.object_function = partial(binary_object, task_id=task_id, target=target)
         self.coreNum=coreNum
         self.solvers=[]
@@ -15,11 +15,25 @@ class ClientProcess:
         self.target=target
         self.timeout=timeout
         self.detailDict={}
+        self.cmd_id_dict={}
         self.instance_length=btc.instance_length
+        self.init_cmd_id_dict(init_config)
+
+
+    def init_cmd_id_dict(self,init_config):
+        for origin_cmd_info in init_config:
+            origin_cmd=origin_cmd_info['origin_cmd']
+            origin_cmd_id=origin_cmd_info['origin_cmd_id']
+            self.cmd_id_dict[origin_cmd]={}
+            self.cmd_id_dict[origin_cmd]['origin_cmd_id']=origin_cmd_id
+            self.cmd_id_dict[origin_cmd]['execute_cmd_dict']={}
+            for execute_cmd_info in origin_cmd_info['execute_cmds']:
+                execute_cmd_id=execute_cmd_info['execute_cmd_info']
+                execute_cmd=execute_cmd_info['execute_cmd']
+                self.cmd_id_dict[origin_cmd]['execute_cmd_dict'][execute_cmd]=execute_cmd_id
 
     def get_solvers(self,js):
         for solver_data in js:
-            origin_cmd_id=solver_data['origin_cmd_id']
             binary_cmd=solver_data['origin_cmd']
             execute_cmds_data=solver_data['execute_cmds']
             task_id=solver_data['task_id']
@@ -65,7 +79,7 @@ def get_solvers_output(js):
     single_cutoff=js[0]['single_cutoff']
     max_cores=js[0]['max_cores']
     cp=ClientProcess(task_id=task_id, target=target,
-                     coreNum=max_cores,timeout=single_cutoff)
+                     coreNum=max_cores,timeout=single_cutoff,init_config=js)
     cp.get_solvers(js)
     msg=cp.get_outputs()
     if msg != 'error':
@@ -86,8 +100,12 @@ def parse_to_jr(cp):
     jr=[]
     for binary_cmd,score in cp.scoreDict.items():
         this_origin_cmd_info={}
+        this_origin_cmd_id_info=cp.cmd_id_dict[binary_cmd]
         this_origin_cmd_info['origin_cmd']=binary_cmd
         this_origin_cmd_info['total_score']=score
+        this_origin_cmd_info['origin_cmd_id']=this_origin_cmd_id
+        this_origin_cmd_id=this_origin_cmd_id_info['origin_cmd_id']
+        this_execute_cmd_dict=this_origin_cmd_id_info['execute_cmd_dict']
         execute_cmds_info=[]
         for execute_cmd, output in cp.detailDict[binary_cmd].items():
             execute_cmd_info={}
@@ -97,6 +115,7 @@ def parse_to_jr(cp):
             score = float(matches[1])
             addition_rundata = matches[2]
             execute_cmd_info['execute_cmd']=execute_cmd
+            execute_cmd_info['execute_cmd_id']=this_execute_cmd_dict[execute_cmd]
             execute_cmd_info['execute_cmd_score']=score
             execute_cmd_info['execute_cmd_status']=status
             execute_cmds_info.append(execute_cmd_info)
