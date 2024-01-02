@@ -28,7 +28,7 @@ class ClientProcess:
             self.cmd_id_dict[origin_cmd]['origin_cmd_id']=origin_cmd_id
             self.cmd_id_dict[origin_cmd]['execute_cmd_dict']={}
             for execute_cmd_info in origin_cmd_info['execute_cmds']:
-                execute_cmd_id=execute_cmd_info['execute_cmd_info']
+                execute_cmd_id=execute_cmd_info['execute_cmd_id']
                 execute_cmd=execute_cmd_info['execute_cmd']
                 self.cmd_id_dict[origin_cmd]['execute_cmd_dict'][execute_cmd]=execute_cmd_id
 
@@ -103,8 +103,8 @@ def parse_to_jr(cp):
         this_origin_cmd_id_info=cp.cmd_id_dict[binary_cmd]
         this_origin_cmd_info['origin_cmd']=binary_cmd
         this_origin_cmd_info['total_score']=score
-        this_origin_cmd_info['origin_cmd_id']=this_origin_cmd_id
         this_origin_cmd_id=this_origin_cmd_id_info['origin_cmd_id']
+        this_origin_cmd_info['origin_cmd_id']=this_origin_cmd_id
         this_execute_cmd_dict=this_origin_cmd_id_info['execute_cmd_dict']
         execute_cmds_info=[]
         for execute_cmd, output in cp.detailDict[binary_cmd].items():
