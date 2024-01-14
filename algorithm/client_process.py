@@ -72,7 +72,7 @@ class ClientProcess:
             self.scoreDict[self.solvers[index].binary_cmd]=scores[index]
         print(self.scoreDict)
 
-def get_solvers_output(js):
+def get_solvers_output(js,result_queue):
     js = json.loads(js)
     task_id=js[0]['task_id']
     target=js[0]['target']
@@ -89,12 +89,14 @@ def get_solvers_output(js):
         with open('output.json', 'w') as file:
         # 将数据写入文件
             json.dump(data, file)
-        return parse_to_jr(cp)
+            result_queue.put(parse_to_jr(cp))
+            # return parse_to_jr(cp)
     else:
         print("run error!!!!")
         jr={'msg':'error!!!!'}
         jr=json.dumps(jr)
-        return jr
+        result_queue.put(jr)
+        # return jr
 
 def parse_to_jr(cp):
     jr=[]

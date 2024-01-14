@@ -23,6 +23,8 @@ from algorithm import client_main
 sio = socketio.Client()
 result_queue = queue.Queue()  # 用于存储 pretest_running 的结果
 log_config.init_logger()
+global current_running_total_solver
+current_running_total_solver=None
 
 
 @sio.on('get_cpu_cores')
@@ -71,22 +73,36 @@ def pretest_running(emit_param_wrapper):
 
 @sio.on('terminate_task')
 def terminate_task(param):
-    print(param)
+    global current_running_total_solver
     param = json.loads(param['param'])
     client_pretest.terminate_task(param['task_id'])
-
+    if current_running_total_solver is not None:
+        current_running_total_solver.kill()
+        logging.info('done terminate:{}!'.format(param['task_id']))
+        current_running_total_solver=None
 
 @sio.on('run_task')
 def pretest_running(emit_param_wrapper):
+    global current_running_total_solver
     logging.info('run_task start with emit_param_wrapper:{}'.format(emit_param_wrapper))
     emit_param = emit_param_wrapper["param"]
     # emit_param = '[{"task_id": "111", "target": "MAX_TARGET", "single_cutoff": 100, "max_cores": 3, "origin_cmd_id": "0", "params": {"fixed_params": [], "tuned_params": [{"name": "seed", "value": "1"}]}, "origin_cmd": "python wrapper.py -seed 1 ", "execute_cmds": [{"execute_cmd_id": "0", "execute_cmd": "cd /home/zhouchen && python a.py"}, {"execute_cmd_id": "1", "execute_cmd": "cd /home/zhouchen && python a.py"}]}]'
-    result = client_process.get_solvers_output(emit_param)
+    result_queue = multiprocessing.Queue()
+    process = multiprocessing.Process(target=client_process.get_solvers_output, args=(emit_param, result_queue))
+    current_running_total_solver=process
+    process.start()
+
+    # 阻塞，等待进程结束
+    process.join()
+    result = result_queue.get()
+
+    # result = client_process.get_solvers_output(emit_param)
     sio.emit('report_res', {
         'emit_id': emit_param_wrapper['emit_id'],
         'res': result
     })
     logging.info('run task end')
+    current_running_total_solver=None
 
 
 if __name__ == '__main__':
