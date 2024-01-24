@@ -33,6 +33,7 @@ def pretest_running(js1):
     js1 = json.loads(js1)
     task_id=js1['task_id']
     jr = {}
+    jr['default_cmd']=js1['default_cmd']
     if js1['target'] == 'MAX_TARGET':
         _abnormal_score = -1 * 1e9
     else:
@@ -64,7 +65,7 @@ def pretest_running(js1):
                                    "run default cmd error!" ,
                                    heads=["Algorithm", "ERROR", "TIME_OUT", "cmd: %s" % js1['default_cmd']]) 
         jr['res'] = 'false'
-        jr['msg'] = 'default cmd run error:'+str(e)
+        jr['msg'] = 'can not find socre from algorithm output, please run the command [{}] on client machine'.format(js1['default_cmd'])
         jr = json.dumps(jr, ensure_ascii=False)
         return jr
     jr = json.dumps(jr, ensure_ascii=False)
