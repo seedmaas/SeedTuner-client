@@ -74,6 +74,7 @@ def pretest_running(emit_param_wrapper):
 @sio.on('terminate_task')
 def terminate_task(param):
     global current_running_total_solver
+    emit_id=param['emit_id'],
     param = json.loads(param['param'])
     client_pretest.terminate_task(param['task_id'])
     if current_running_total_solver is not None:
@@ -81,7 +82,7 @@ def terminate_task(param):
         logging.info('done terminate:{}!'.format(param['task_id']))
         current_running_total_solver=None
     sio.emit('report_res', {
-        'emit_id': param['emit_id'],
+        'emit_id': emit_id,
         'res': True
     })
 
