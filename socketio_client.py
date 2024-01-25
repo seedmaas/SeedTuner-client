@@ -80,6 +80,10 @@ def terminate_task(param):
         current_running_total_solver.kill()
         logging.info('done terminate:{}!'.format(param['task_id']))
         current_running_total_solver=None
+    sio.emit('report_res', {
+        'emit_id': param['emit_id'],
+        'res': True
+    })
 
 @sio.on('run_task')
 def pretest_running(emit_param_wrapper):
