@@ -40,7 +40,7 @@ if [ -z "$server" ]; then
     exit 1
 fi
 
-repository_url="git@github.com:seedmaas/SeedTuner-client.git"
+repository_url="https://github.com/seedmaas/SeedTuner-client.git"
 
 git clone --single-branch --branch dev $repository_url 
 
