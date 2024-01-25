@@ -60,7 +60,6 @@ def pretest_running(js1):
         else:
             jr['res'] = 'false'
     except Exception as e:
-        logging.logger.log(str(e))
         logging.logger.log(logging.Level.INFO, js1['task_id'],
                                    "run default cmd error!" ,
                                    heads=["Algorithm", "ERROR", "TIME_OUT", "cmd: %s" % js1['default_cmd']]) 
