@@ -23,11 +23,12 @@ def kill(proc_pid):
         
 def terminate_task(task_id):
     pid_file = btc.get_task_pids_path(task_id)
-    with open(pid_file, 'r') as file:
-        for line in file:
-            pid = line.strip() 
-            kill(pid)
-    
+    if os.path.exists(pid_file):
+        with open(pid_file, 'r') as file:
+            for line in file:
+                pid = line.strip() 
+                kill(pid)
+        
 
 def pretest_running(js1):
     js1 = json.loads(js1)
