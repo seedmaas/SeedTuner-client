@@ -93,7 +93,7 @@ def get_solvers_output(js,result_queue):
             # return parse_to_jr(cp)
     else:
         print("run error!!!!")
-        jr={'msg':'error!!!!'}
+        jr={'msg':'error'}
         jr=json.dumps(jr)
         result_queue.put(jr)
         # return jr
