@@ -48,7 +48,8 @@ def pretest_running(js1):
         # proc = subprocess.run(js1['default_cmd'], shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
         #                       timeout=math.ceil(1.2 * js1['single_cutoff']))
         # output = proc.stdout.decode()
-        process.wait(timeout=math.ceil(1.2 * js1['single_cutoff']))
+        time_out=math.ceil(1.2 * js1['single_cutoff']) if 'single_cutoff' in js1 and js1['single_cutoff'] != "" else 1200
+        process.wait(timeout=time_out)
         output = process.stdout.read().decode()
         jr['msg'] = output
         pattern = r"<([^>]+)>"
