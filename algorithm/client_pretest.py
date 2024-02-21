@@ -65,7 +65,7 @@ def pretest_running(js1):
                                    "run default cmd error!" ,
                                    heads=["Algorithm", "ERROR", "TIME_OUT", "cmd: %s" % js1['default_cmd']]) 
         jr['res'] = 'false'
-        jr['msg'] = 'can not find score from algorithm output, please run the command [{}] on client machine'.format(js1['default_cmd'])
+        jr['msg'] = 'can not find score from algorithm output, please run the command [{}] on client machine,and make sure the output format is [ Result of this algorithm run:<STATUS>,<SCORE>,<ADDITIONAL RUNDATA> ]'.format(js1['default_cmd'])
         jr = json.dumps(jr, ensure_ascii=False)
         return jr
     jr = json.dumps(jr, ensure_ascii=False)
