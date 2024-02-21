@@ -63,7 +63,10 @@ def pretest_running(js1):
     except Exception as e:
         logging.logger.log(logging.Level.INFO, js1['task_id'],
                                    "run default cmd error!" ,
-                                   heads=["Algorithm", "ERROR", "TIME_OUT", "cmd: %s" % js1['default_cmd']]) 
+                                   heads=["Algorithm", "ERROR", "TIME_OUT", "cmd: %s" % js1['default_cmd']])
+        logging.logger.log(logging.Level.INFO, js1['task_id'],
+                                   "exception:{}".format(str(e)) ,
+                                   heads=["Algorithm", "ERROR", "TIME_OUT", "cmd: %s" % js1['default_cmd']])  
         jr['res'] = 'false'
         jr['msg'] = 'can not find score from algorithm output, please run the command [{}] on client machine,and make sure the output format is [ Result of this algorithm run:<STATUS>,<SCORE>,<ADDITIONAL RUNDATA> ]'.format(js1['default_cmd'])
         jr = json.dumps(jr, ensure_ascii=False)
