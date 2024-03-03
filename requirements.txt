@@ -1,2 +1,4 @@
 python-socketio
-numpy
+websocket-client
+requests
+psutil
