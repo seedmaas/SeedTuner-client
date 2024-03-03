@@ -40,10 +40,6 @@ if [ -z "$server" ]; then
     exit 1
 fi
 
-repository_url="https://github.com/seedmaas/SeedTuner-client.git"
-
-git clone --single-branch --branch dev $repository_url 
-
 pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple/
 
 pip install --upgrade pip
@@ -57,12 +53,6 @@ if [ -n "$extra_requirements" ]; then
     pip install -r "$extra_requirements"
 fi
 
-git pull
 
 echo "keep listening..."
-
 python3 socketio_client.py --token $token --server $server
-
-
-
-
